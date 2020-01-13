@@ -1,0 +1,6 @@
+api/Kantahe2API/obj/*
+api/Kantahe2API/.vs/*
+api/Kantahe2API/bin/*
+api/Kantahe2API/release-win64/*
+api/Kantahe2API/release-linux/*
+api/Kantahe2API/release-win32/*
