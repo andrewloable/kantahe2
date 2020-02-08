@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29613.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kantahe2API", "api\Kantahe2API\Kantahe2API.csproj", "{86C15228-6173-47E2-95DC-6F9E9F5DB72D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kantahe2Common", "common\Kantahe2Common\Kantahe2Common.csproj", "{0FBD1CE5-0A9D-430B-9797-8CD1B7959047}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{86C15228-6173-47E2-95DC-6F9E9F5DB72D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{86C15228-6173-47E2-95DC-6F9E9F5DB72D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{86C15228-6173-47E2-95DC-6F9E9F5DB72D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{86C15228-6173-47E2-95DC-6F9E9F5DB72D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0FBD1CE5-0A9D-430B-9797-8CD1B7959047}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0FBD1CE5-0A9D-430B-9797-8CD1B7959047}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0FBD1CE5-0A9D-430B-9797-8CD1B7959047}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0FBD1CE5-0A9D-430B-9797-8CD1B7959047}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0885AA62-5B1F-4189-A5AF-8B19A5E170C0}
+	EndGlobalSection
+EndGlobal

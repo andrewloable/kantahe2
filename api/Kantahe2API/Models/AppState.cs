@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Kantahe2Common.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,9 +16,5 @@ namespace Kantahe2API.Models
         public static bool IsPlayingRandom { get; set; }
         public static Random RNG = new Random();
     }
-    public enum PlayState
-    {
-        Stopped,
-        Playing
-    }
+    
 }
