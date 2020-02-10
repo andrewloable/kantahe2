@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Kantahe2Common.Models
+namespace Kantahe2Library.Models
 {
     public class Song
     {

@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\common\Kantahe2Common\Kantahe2Common.csproj" />
+    <ProjectReference Include="..\..\common\Kantahe2Library\Kantahe2Library.csproj" />
   </ItemGroup>
 
 
