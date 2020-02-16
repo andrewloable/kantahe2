@@ -17,7 +17,10 @@
         videoPlayer.pause();
     },
     ended: function () {
-        alert("Video Ended");
+        window.video.callbackEnded.invokeMethodAsync('VideoEnded');
+    },
+    setCallback: function (helper) {
+        window.video.callbackEnded = helper;
     },
     test: function (id, msg) {
         var elem = document.getElementById(id);
