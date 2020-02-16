@@ -38,7 +38,7 @@ namespace Kantahe2API.Controllers
                             Artist = o.Artist.ToString().Trim().ToUpper(),
                             Title = o.Title.ToString().Trim().ToUpper(),
                             ID = o.ID.ToString(),
-                            FileName = fn
+                            FileName = o.FileName.ToString()
                         });
                     }
                 }
@@ -140,7 +140,14 @@ namespace Kantahe2API.Controllers
             if (queue.Count > 0)
             {
                 AppState.CurrentSong = queue.Dequeue();
-                AppState.NextSong = queue.Peek();
+                if (queue.Count > 0)
+                {
+                    AppState.NextSong = queue.Peek();
+                } else
+                {
+                    AppState.NextSong = null;
+                }                
+                AppState.Status = PlayState.Playing;
                 return Ok(AppState.CurrentSong);
             }
             if (AppState.Songs.Count() > 0)
@@ -148,6 +155,7 @@ namespace Kantahe2API.Controllers
                 var idx = AppState.RNG.Next(0, AppState.Songs.Count());
                 AppState.CurrentSong = AppState.Songs.ElementAt(idx);
                 AppState.NextSong = null;
+                AppState.Status = PlayState.Playing;
                 return Ok(AppState.CurrentSong);
             }
             return NotFound();

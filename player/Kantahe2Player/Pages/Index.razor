@@ -1,5 +1,47 @@
 ﻿@page "/"
+@using System.Collections.ObjectModel
+@using Kantahe2Library.Services
+@using Kantahe2Library.Models
+@inject SongService songService
+@inject IJSRuntime JSRuntime
 
-<h1>Hello, world!</h1>
+<video id="videoPlayer" style="min-height: 100%; min-width: 100%;" onended="video.ended" autoplay></video>
 
-Welcome to your new app.
+@code {
+    private System.Threading.Thread loop;
+    private PlayState currentState = PlayState.Stopped;
+    private Song currentSong = new Song();
+    private string VideoHost;
+
+    protected override void OnInitialized()
+    {
+        VideoHost = songService.GetVideoHost();
+        loop = new System.Threading.Thread(() =>
+        {
+            while (true)
+            {
+                var song = songService.GetCurrentSongAsync().Result;
+                if (song != null && currentSong.ID != song.ID)
+                {
+                    JSRuntime.InvokeVoidAsync("video.play", "videoPlayer", $"{VideoHost}/{song.FileName}");
+                    currentSong = song;
+                }
+
+                var status = songService.GetStatusAsync().Result;
+                if (currentState != status)
+                {
+                    if (status == PlayState.Playing)
+                    {
+                        JSRuntime.InvokeVoidAsync("video.play", "videoPlayer", $"{VideoHost}/{song.FileName}");
+                    } else if (status == PlayState.Stopped)
+                    {
+                        JSRuntime.InvokeVoidAsync("video.stop", "videoPlayer");
+                    }
+                    currentState = status;
+                }
+                System.Threading.Thread.Sleep(songService.GetRefreshWait());
+            }
+        });
+        loop.Start();
+    }
+}

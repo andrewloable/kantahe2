@@ -38,7 +38,7 @@ namespace Kantahe2API.Controllers
                             Artist = o.Artist.ToString().Trim().ToUpper(),
                             Title = o.Title.ToString().Trim().ToUpper(),
                             ID = o.ID.ToString(),
-                            FileName = fn
+                            FileName = o.FileName.ToString()
                         });
                     }
                 }
@@ -79,7 +79,7 @@ namespace Kantahe2API.Controllers
                             Artist = o.Artist.ToString().Trim().ToUpper(),
                             Title = o.Title.ToString().Trim().ToUpper(),
                             ID = o.ID.ToString(),
-                            FileName = fn
+                            FileName = o.FileName.ToString()
                         });
                     }
                 }
