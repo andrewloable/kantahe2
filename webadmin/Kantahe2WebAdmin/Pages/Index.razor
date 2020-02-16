@@ -1,5 +1,84 @@
 ﻿@page "/"
+@using Syncfusion.EJ2.Blazor.Grids
+@using System.Collections.ObjectModel
+@using Kantahe2Library.Services
+@using Kantahe2Library.Models
+@inject SongService songService
 
-<h1>Now Playing</h1>
+<div>
+    <button class="btn btn-primary m-2" @onclick="Play"><span class="oi oi-media-play" aria-hidden="true"></span></button>
+    <button class="btn btn-danger m-2" @onclick="Stop"><span class="oi oi-media-stop" aria-hidden="true"></span></button>
+    <button class="btn btn-warning m-2" @onclick="Next"><span class="oi oi-media-skip-forward" aria-hidden="true"></span></button>
+</div>
 
-Welcome to your new app.
+<h1>Queue</h1>
+
+@if (queues == null)
+{
+    <p><em>No Songs Found</em></p>
+}
+else if (queues.Count == 0)
+{
+    <p><em>No songs in queue.</em></p>
+}
+else
+{    
+    <div class="col-lg-12 control-section">
+        <div class="content-wrapper">
+            <div class="row">
+                <EjsGrid DataSource="@queues" AllowPaging="true">
+                    <GridPageSettings PageCount="5" PageSize="10"></GridPageSettings>
+                    <GridSelectionSettings Type="SelectionType.Single" Mode="SelectionMode.Row"></GridSelectionSettings>
+                    <GridColumns>
+                        <GridColumn Field=@nameof(Song.Title) HeaderText="Title"></GridColumn>
+                        <GridColumn Field=@nameof(Song.Artist) HeaderText="Artist"></GridColumn>
+                    </GridColumns>
+                </EjsGrid>
+            </div>
+        </div>
+    </div>
+    <p><em>Drag down to update list.</em></p>
+}
+
+@code {
+    private ObservableCollection<Song> queues;
+    private string currentSong = "";
+    private System.Threading.Thread loop;
+
+
+    protected override void OnInitialized()
+    {
+        loadQueueList();
+    }
+
+    private async void loadQueueList()
+    {
+        var resp = await songService.GetQueueListAsync();
+        if (resp != null)
+        {
+            queues = new ObservableCollection<Song>(resp);
+            StateHasChanged();
+        }        
+    }
+
+    private async Task Play()
+    {
+        var song = await songService.PlaySongAsync();
+        currentSong = $"{song.Title} By {song.Artist}";
+        StateHasChanged();
+    }
+
+    private async Task Stop()
+    {
+        await songService.StopSongAsync();
+        currentSong = "Stopped";
+        StateHasChanged();
+    }
+
+    private async Task Next()
+    {
+        var song = await songService.NextSongAsync();
+        currentSong = $"{song.Title} By {song.Artist}";
+        StateHasChanged();
+    }
+}

@@ -1,0 +1,133 @@
+﻿@page "/songlist"
+@using Syncfusion.EJ2.Blazor.Grids
+@using Syncfusion.EJ2.Blazor.Navigations
+@using Syncfusion.EJ2.Blazor.Notifications
+@using System.Collections.ObjectModel
+@using Kantahe2Library.Services
+@using Kantahe2Library.Models
+@inject SongService songService
+
+<div>
+    <button class="btn btn-primary m-2" @onclick="Play"><span class="oi oi-media-play" aria-hidden="true"></span></button>
+    <button class="btn btn-danger m-2" @onclick="Stop"><span class="oi oi-media-stop" aria-hidden="true"></span></button>
+    <button class="btn btn-warning m-2" @onclick="Next"><span class="oi oi-media-skip-forward" aria-hidden="true"></span></button>
+</div>
+
+<h1>Song List</h1>
+
+@if (songs == null)
+{
+    <p><em>No Songs Found</em></p>
+}
+else if (songs.Count == 0)
+{
+    <p><em>No songs loaded.</em></p>
+}
+else
+{
+    <EjsToast ID="toast_default" @ref="ToastObj" Content="@ToastContent" TimeOut="2000" ShowProgressBar="true">
+        <ToastPosition X="Center" Y="Bottom"></ToastPosition>
+    </EjsToast>
+    <div class="col-lg-12 control-section">
+        <div class="content-wrapper">
+            <div class="row">
+                <EjsGrid @ref="@Grid" DataSource="@songs" AllowSorting="true" AllowPaging="true" AllowFiltering="true" AllowSelection="true" ContextMenuItems="@contextmenu" Toolbar="@toolbar">
+                    <GridPageSettings PageCount="5" PageSize="10"></GridPageSettings>
+                    <GridSelectionSettings Type="SelectionType.Single" Mode="SelectionMode.Row"></GridSelectionSettings>
+                    <GridEvents ContextMenuItemClicked="OnContextMenuClick" TValue="Song"></GridEvents>
+                    <GridFilterSettings Type="Syncfusion.EJ2.Blazor.Grids.FilterType.Menu"></GridFilterSettings>
+                    <GridColumns>
+                        <GridColumn Field=@nameof(Song.Title) HeaderText="Title"></GridColumn>
+                        <GridColumn Field=@nameof(Song.Artist) HeaderText="Artist"></GridColumn>
+                    </GridColumns>
+                </EjsGrid>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private ObservableCollection<Song> songs;
+    private string currentSong = "";
+    EjsGrid<Song> Grid;
+    private List<ContextMenuItemModel> contextmenu;
+    private List<string> toolbar;
+    private EjsToast ToastObj;
+    private string ToastContent = "Song Added To Queue";
+    private System.Threading.Thread loop;
+
+    protected override void OnInitialized()
+    {
+        loadSongList();
+        toolbar = new List<string>()
+        {
+            "Search"
+        };
+
+        contextmenu = new List<ContextMenuItemModel>()
+        {
+            new ContextMenuItemModel
+            {
+                Text = "Add To Queue",
+                Target = ".e-content",
+                Id = "mnuAddToQueue"
+            },
+            new ContextMenuItemModel
+            {
+                Text = "Add Same Artist Songs To Queue",
+                Target = ".e-content",
+                Id = "mnuAddArtistToQueue"
+            }
+        };
+
+        StateHasChanged();
+    }
+
+    private async void loadSongList()
+    {
+        var resp = await songService.GetSongsAsync();
+        if (resp != null)
+        {
+            songs = new ObservableCollection<Song>(resp);
+            StateHasChanged();
+        }
+    }
+
+    private async Task Play()
+    {
+        var song = await songService.PlaySongAsync();
+        currentSong = $"{song.Title} By {song.Artist}";
+        StateHasChanged();
+    }
+
+    private async Task Stop()
+    {
+        await songService.StopSongAsync();
+        currentSong = "Stopped";
+        StateHasChanged();
+    }
+
+    private async Task Next()
+    {
+        var song = await songService.NextSongAsync();
+        currentSong = $"{song.Title} By {song.Artist}";
+        StateHasChanged();
+    }
+
+    public async void OnContextMenuClick(MenuEventArgs args)
+    {
+        var item = await Grid.GetSelectedRecords();
+        if (args.Item.Id == "mnuAddToQueue" && item.Count > 0)
+        {
+            await songService.AddQueue(item[0]);
+            await ToastObj.Show();
+        }
+        else if (args.Item.Id == "mnuAddArtistToQueue" && item.Count > 0)
+        {
+            var artist = item[0].Artist;
+            await songService.AddArtistsToQueue(artist);
+            await ToastObj.Show();
+        }
+
+    }
+}

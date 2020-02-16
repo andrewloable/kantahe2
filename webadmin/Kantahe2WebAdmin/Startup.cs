@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Syncfusion.EJ2.Blazor;
 using Kantahe2Library.Services;
+using Kantahe2Library.Models;
 
 namespace Kantahe2WebAdmin
 {
@@ -29,6 +30,10 @@ namespace Kantahe2WebAdmin
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddSyncfusionBlazor();
+            services.AddHttpClient("kantahe", c =>
+            {
+                c.BaseAddress = new Uri(Configuration["APIHost"]);
+            });
             services.AddSingleton<SongService>();
         }
 

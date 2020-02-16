@@ -2,24 +2,32 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 using Kantahe2Library.Models;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Kantahe2Library.Services
 {
     public class SongService : ISongService
     {
-        private static readonly HttpClient client = new HttpClient();
+        private readonly HttpClient client;
+        public SongService(IHttpClientFactory httpClientFactory)
+        {
+            this.client = httpClientFactory.CreateClient("kantahe");
+        }
         /// <summary>
         /// Get the list of songs
         /// </summary>
         /// <returns></returns>
         public async Task<List<Song>> GetSongsAsync()
         {
-            var response = await client.GetAsync($"{Constants.APIHostSetting}/api/song");
+            var response = await client.GetAsync("/api/song");
             if (response.IsSuccessStatusCode)
             {
                 var json = await response.Content.ReadAsStringAsync();
-                var retval = JsonConvert.DeserializeObject<Song[]>(json);
+                if (string.IsNullOrEmpty(json))
+                {
+                    return null;
+                }
+                var retval = JsonSerializer.Deserialize<Song[]>(json);
                 return new List<Song>(retval);
             }
             return null;
@@ -30,14 +38,18 @@ namespace Kantahe2Library.Services
         /// <returns></returns>
         public async Task<List<Song>> UpdateSongListAsync()
         {
-            var response = await client.PostAsync($"{Constants.APIHostSetting}/api/song/reload", null);
+            var response = await client.PostAsync("/api/song/reload", null);
             if (response.IsSuccessStatusCode)
             {
                 response = await client.GetAsync("/api/song");
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
-                    var retval = JsonConvert.DeserializeObject<Song[]>(json);
+                    if (string.IsNullOrEmpty(json))
+                    {
+                        return null;
+                    }
+                    var retval = JsonSerializer.Deserialize<Song[]>(json);
                     return new List<Song>(retval);
                 }
             }
@@ -49,11 +61,15 @@ namespace Kantahe2Library.Services
         /// <returns></returns>
         public async Task<List<Song>> GetQueueListAsync()
         {
-            var response = await client.GetAsync($"{Constants.APIHostSetting}/api/queue");
+            var response = await client.GetAsync("/api/queue");
             if (response.IsSuccessStatusCode)
             {
                 var json = await response.Content.ReadAsStringAsync();
-                var retval = JsonConvert.DeserializeObject<Song[]>(json);
+                if (string.IsNullOrEmpty(json))
+                {
+                    return null;
+                }
+                var retval = JsonSerializer.Deserialize<Song[]>(json);
                 return new List<Song>(retval);
             }
             return null;
@@ -64,11 +80,15 @@ namespace Kantahe2Library.Services
         /// <returns></returns>
         public async Task<Song> GetCurrentSongAsync()
         {
-            var response = await client.GetAsync($"{Constants.APIHostSetting}/api/queue/current-song");
+            var response = await client.GetAsync("/api/queue/current-song");
             if (response.IsSuccessStatusCode)
             {
                 var json = await response.Content.ReadAsStringAsync();
-                var retval = JsonConvert.DeserializeObject<Song>(json);
+                if (string.IsNullOrEmpty(json))
+                {
+                    return null;
+                }
+                var retval = JsonSerializer.Deserialize<Song>(json);
                 return retval;
             }
             return null;
@@ -79,11 +99,15 @@ namespace Kantahe2Library.Services
         /// <returns></returns>
         public async Task<Song> GetNextSongAsync()
         {
-            var response = await client.GetAsync($"{Constants.APIHostSetting}/api/queue/next-song");
+            var response = await client.GetAsync("/api/queue/next-song");
             if (response.IsSuccessStatusCode)
             {
                 var json = await response.Content.ReadAsStringAsync();
-                var retval = JsonConvert.DeserializeObject<Song>(json);
+                if (string.IsNullOrEmpty(json))
+                {
+                    return null;
+                }
+                var retval = JsonSerializer.Deserialize<Song>(json);
                 return retval;
             }
             return null;
@@ -94,11 +118,15 @@ namespace Kantahe2Library.Services
         /// <returns></returns>
         public async Task<PlayState> GetStatusAsync()
         {
-            var response = await client.GetAsync($"{Constants.APIHostSetting}/api/queue/status");
+            var response = await client.GetAsync("/api/queue/status");
             if (response.IsSuccessStatusCode)
             {
                 var json = await response.Content.ReadAsStringAsync();
-                var retval = JsonConvert.DeserializeObject<PlayState>(json);
+                if (string.IsNullOrEmpty(json))
+                {
+                    return PlayState.None;
+                }
+                var retval = JsonSerializer.Deserialize<PlayState>(json);
                 return retval;
             }
             return PlayState.None;
@@ -109,11 +137,15 @@ namespace Kantahe2Library.Services
         /// <returns></returns>
         public async Task<Song> PlaySongAsync()
         {
-            var response = await client.GetAsync($"{Constants.APIHostSetting}/api/queue/play");
+            var response = await client.PostAsync("/api/queue/play", null);
             if (response.IsSuccessStatusCode)
             {
                 var json = await response.Content.ReadAsStringAsync();
-                var retval = JsonConvert.DeserializeObject<Song>(json);
+                if (string.IsNullOrEmpty(json))
+                {
+                    return null;
+                }
+                var retval = JsonSerializer.Deserialize<Song>(json);
                 return retval;
             }
             return null;
@@ -124,11 +156,15 @@ namespace Kantahe2Library.Services
         /// <returns></returns>
         public async Task<Song> StopSongAsync()
         {
-            var response = await client.GetAsync($"{Constants.APIHostSetting}/api/queue/stop");
+            var response = await client.PostAsync("/api/queue/stop", null);
             if (response.IsSuccessStatusCode)
             {
                 var json = await response.Content.ReadAsStringAsync();
-                var retval = JsonConvert.DeserializeObject<Song>(json);
+                if (string.IsNullOrEmpty(json))
+                {
+                    return null;
+                }
+                var retval = JsonSerializer.Deserialize<Song>(json);
                 return retval;
             }
             return null;
@@ -139,14 +175,49 @@ namespace Kantahe2Library.Services
         /// <returns></returns>
         public async Task<Song> NextSongAsync()
         {
-            var response = await client.GetAsync($"{Constants.APIHostSetting}/api/queue/next");
+            var response = await client.PostAsync("/api/queue/next", null);
             if (response.IsSuccessStatusCode)
             {
                 var json = await response.Content.ReadAsStringAsync();
-                var retval = JsonConvert.DeserializeObject<Song>(json);
+                if (string.IsNullOrEmpty(json))
+                {
+                    return null;
+                }
+                var retval = JsonSerializer.Deserialize<Song>(json);
                 return retval;
             }
             return null;
+        }
+        /// <summary>
+        /// Add song to queue
+        /// </summary>
+        /// <param name="song"></param>
+        /// <returns></returns>
+        public async Task<Song> AddQueue(Song song)
+        {
+            var payload = new StringContent(JsonSerializer.Serialize(song), System.Text.Encoding.UTF8, "application/json");
+            var response = await client.PostAsync("/api/queue", payload);
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(json))
+                {
+                    return null;
+                }
+                var retval = JsonSerializer.Deserialize<Song>(json);
+                return retval;
+            }
+            return null;
+        }
+        /// <summary>
+        /// Add artist songs to queue
+        /// </summary>
+        /// <param name="artist"></param>
+        /// <returns></returns>
+        public async Task AddArtistsToQueue(string artist)
+        {
+            var response = await client.PutAsync($"/api/queue?artist={artist}", null);            
+            return;
         }
     }
 }

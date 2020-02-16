@@ -23,7 +23,7 @@ namespace Kantahe2WebAdmin
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 { 
-                    webBuilder.UseStartup<Startup>().UseUrls(Constants.WebAdminHostSetting);
+                    webBuilder.UseStartup<Startup>();
                 });
     }
 }
