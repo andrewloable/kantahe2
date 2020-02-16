@@ -6,7 +6,11 @@
 @using Kantahe2Library.Services
 @using Kantahe2Library.Models
 @inject SongService songService
+@inject IJSRuntime JSRuntime
+@implements IDisposable
 
+<h4 id="currentSong"></h4>
+<h5 id="currentStatus"></h5>
 <div>
     <button class="btn btn-primary m-2" @onclick="Play"><span class="oi oi-media-play" aria-hidden="true"></span></button>
     <button class="btn btn-danger m-2" @onclick="Stop"><span class="oi oi-media-stop" aria-hidden="true"></span></button>
@@ -48,16 +52,36 @@ else
 
 @code {
     private ObservableCollection<Song> songs;
-    private string currentSong = "";
     EjsGrid<Song> Grid;
     private List<ContextMenuItemModel> contextmenu;
     private List<string> toolbar;
     private EjsToast ToastObj;
     private string ToastContent = "Song Added To Queue";
     private System.Threading.Thread loop;
+    private bool isLoopAborted = false;
 
     protected override void OnInitialized()
     {
+        loop = new System.Threading.Thread(() =>
+        {
+            while(!isLoopAborted)
+            {
+                var song = songService.GetCurrentSongAsync().Result;
+                var status = songService.GetStatusAsync().Result;
+                if (song != null)
+                {
+                    JSRuntime.InvokeVoidAsync("SongStatus.updateCurrentSong", "currentSong", song.Title, song.Artist);                    
+                } else
+                {
+                    JSRuntime.InvokeVoidAsync("SongStatus.updateCurrentSong", "currentSong", "None", "None");
+                }
+                JSRuntime.InvokeVoidAsync("SongStatus.updateStatus", "currentStatus", status.ToString());
+
+                System.Threading.Thread.Sleep(songService.GetRefreshWait());
+            }
+        });
+        loop.Start();
+
         loadSongList();
         toolbar = new List<string>()
         {
@@ -83,6 +107,14 @@ else
         StateHasChanged();
     }
 
+    public void Dispose()
+    {
+        if (loop != null)
+        {
+            isLoopAborted = true;
+        }
+    }
+
     private async void loadSongList()
     {
         var resp = await songService.GetSongsAsync();
@@ -96,21 +128,18 @@ else
     private async Task Play()
     {
         var song = await songService.PlaySongAsync();
-        currentSong = $"{song.Title} By {song.Artist}";
         StateHasChanged();
     }
 
     private async Task Stop()
     {
         await songService.StopSongAsync();
-        currentSong = "Stopped";
         StateHasChanged();
     }
 
     private async Task Next()
     {
         var song = await songService.NextSongAsync();
-        currentSong = $"{song.Title} By {song.Artist}";
         StateHasChanged();
     }
 

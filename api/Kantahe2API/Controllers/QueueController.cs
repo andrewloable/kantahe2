@@ -131,6 +131,10 @@ namespace Kantahe2API.Controllers
         [HttpPost("next")]
         public ActionResult<Song> Next()
         {
+            if (AppState.Queue == null)
+            {
+                AppState.Queue = new Queue<Song>();
+            }
             var queue = (Queue<Song>)AppState.Queue;
             AppState.Status = PlayState.Stopped;
             if (queue.Count > 0)

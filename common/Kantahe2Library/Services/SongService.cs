@@ -3,15 +3,22 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Kantahe2Library.Models;
 using System.Text.Json;
+using Microsoft.Extensions.Configuration;
 
 namespace Kantahe2Library.Services
 {
     public class SongService : ISongService
     {
         private readonly HttpClient client;
-        public SongService(IHttpClientFactory httpClientFactory)
+        private readonly IConfiguration configuration;
+        public SongService(IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
-            this.client = httpClientFactory.CreateClient("kantahe");
+            client = httpClientFactory.CreateClient("kantahe");
+            this.configuration = configuration;
+        }
+        public int GetRefreshWait()
+        {
+            return int.Parse(configuration["RefreshMilliSeconds"]);
         }
         /// <summary>
         /// Get the list of songs
