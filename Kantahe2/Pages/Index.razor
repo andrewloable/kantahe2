@@ -1,0 +1,50 @@
+﻿@page "/qrcode"
+@using Kantahe2.Data
+@inject Kantahe2.Data.Kantahe2State State
+@inject NavigationManager Nav
+@inject IJSRuntime JSRuntime
+<h1 style="text-align:center; color: white;">@host</h1>
+<div style="text-align: center;">
+    <img src=@qrbase64 />
+</div>
+
+
+@code {
+    public string qrbase64;
+    public string host;
+
+    protected override void OnInitialized()
+    {
+        Init();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            Init();
+        }
+    }
+
+    private void Init()
+    {
+        JSRuntime.InvokeVoidAsync("video.playerTheme");
+        var ip = State.GetLocalIPAddress();
+        host = $"http://{ip}/start";
+        var b64 = State.GenerateQRCode(host);
+        qrbase64 = $"data:image/jpeg; base64,{b64}";
+        State.OnUpdateStatus += UpdateStatus;
+    }
+
+    private void UpdateStatus(object sender, Kantahe2EventArgs e)
+    {   
+        switch (e.Status)
+        {
+            case "Next":
+            case "UserConnected":
+                State.OnUpdateStatus -= UpdateStatus;
+                Nav.NavigateTo("/player");
+                break;
+        }
+    }
+}

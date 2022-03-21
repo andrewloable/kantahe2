@@ -1,0 +1,93 @@
+﻿@page "/player"
+@using Kantahe2.Data
+@inject Kantahe2.Data.Kantahe2State State
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Nav
+
+@if (showinfo)
+{
+<div style="display: grid; grid-template-columns: repeat(3, 1fr)">
+    <h5 style="color: white; text-align: center">@host</h5>
+    <div style="text-align: center">
+        <img style="width: 100px; height: 100px;" src=@qrbase64 />
+    </div>
+        @if (currentSong != null)
+        {
+            <h4 style="color: white; text-align: center">@currentSong.Artist - @currentSong.Title</h4>
+        }
+</div>    
+}
+
+<video id="videoPlayer" style="min-height: 100%; min-width: 100%;" onended="window.video.ended();" autoplay></video>
+
+@code {
+
+    private DotNetObjectReference<Player>? dotnetHelper;
+    public string qrbase64;
+    public string host;
+    public bool showinfo = false;
+    public Song currentSong;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            JSRuntime.InvokeVoidAsync("video.playerTheme");
+
+            var ip = State.GetLocalIPAddress();
+            host = $"http://{ip}/start";
+            var b64 = State.GenerateQRCode(host);
+            qrbase64 = $"data:image/jpeg; base64,{b64}";
+            State.OnUpdateStatus += UpdateStatus;
+
+            dotnetHelper = DotNetObjectReference.Create(this);
+            JSRuntime.InvokeVoidAsync("video.setCallback", dotnetHelper);
+
+            GoNextSong();
+            StateHasChanged();
+        }
+    }
+
+    private void GoNextSong()
+    {
+        currentSong = State.GetNextSong();
+        var data = State.SongBytes(currentSong);
+        JSRuntime.InvokeVoidAsync("video.play", "videoPlayer", data);
+        State.isPlaying = true;
+    }
+
+    private void UpdateStatus(object sender, Kantahe2EventArgs e)
+    {
+        switch (e.Status)
+        {
+            case "Next":
+                GoNextSong();
+                break;
+            case "ToggleInfo":
+                InvokeAsync(() =>
+                {
+                    showinfo = !showinfo;
+                    StateHasChanged();
+                });                
+                break;
+            case "Stop":
+                State.isPlaying = false;
+                State.OnUpdateStatus -= UpdateStatus;
+                JSRuntime.InvokeVoidAsync("video.play", "videoPlayer", "");
+                Nav.NavigateTo("/qrcode");
+                break;
+        }
+    }
+
+    [JSInvokable]
+    public void VideoEnded()
+    {
+        GoNextSong();
+    }
+
+    public void Dispose()
+    {
+        dotnetHelper?.Dispose();
+    }
+
+}

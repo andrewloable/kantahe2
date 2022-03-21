@@ -1,0 +1,118 @@
+﻿@page "/start"
+@using Kantahe2.Data
+@inject Kantahe2.Data.Kantahe2State State
+@inject IJSRuntime JSRuntime
+
+<div class="card">
+    <div class="card-body text-center">
+        <div class="btn-group btn-group-lg" role="group">
+            <button class="btn btn-success" type="button" @onclick="Play">
+                <i class="fa fa-play"></i>
+            </button>
+            <button class="btn btn-info" type="button" @onclick="Next">
+                <i class="fa fa-forward"></i>
+            </button>
+            <button class="btn btn-danger" type="button" @onclick="Stop">
+                <i class="fa fa-stop"></i>
+            </button>
+            <button class="btn btn-warning" type="button" @onclick="ToggleInfo">
+                <i class="fa fa-info"></i>
+            </button>
+        </div>
+    </div>
+</div>
+<div>
+    <ul class="nav nav-pills" role="tablist">
+        <li class="nav-item" role="presentation"><a class="nav-link active" role="tab" data-bs-toggle="pill" href="#tab-1">Song List</a></li>
+        <li class="nav-item" role="presentation"><a class="nav-link" role="tab" data-bs-toggle="pill" href="#tab-2">Queue</a></li>
+    </ul>
+    <div class="tab-content m-2">
+        <div class="tab-pane active" role="tabpanel" id="tab-1">
+            <input class="form-control-lg" type="text" name="Search" placeholder="Search" style="width: 100%;" @bind-value="search" @bind-value:event="oninput">
+            <ul class="list-group">
+                <Virtualize Context="o" Items="FilteredSongs">
+                    <li class="list-group-item">
+                        <h4>@o.Title - @o.Artist</h4>                        
+                        <div class="text-right">
+                            <button class="btn btn-primary btn-lg" type="button" @onclick="() => QueueSong(o)"><i class="fa fa-plus"></i></button>
+                        </div>
+                    </li>
+                </Virtualize>
+            </ul>
+        </div>
+        <div class="tab-pane" role="tabpanel" id="tab-2">
+            <ul class="list-group">
+                <Virtualize Context="o" Items="Queue">
+                    <li class="list-group-item">
+                        <h4>@o.Title - @o.Artist</h4>                        
+                    </li>
+                </Virtualize>
+            </ul>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<Song> FilteredSongs => State.GetSongList()
+        .Where(r => r.Title.Contains(search.ToUpper()) || r.Artist.Contains(search.ToUpper()))
+        .Where(r => !Queue.Contains(r))
+        .OrderBy(r => r.Title)
+        .ToList();
+
+    private List<Song> Queue => State.GetSongQueue().ToList();
+
+    private string search = "";
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            State.UserIsConnected();
+            JSRuntime.InvokeVoidAsync("video.adminTheme");
+        }
+    }
+
+    private void QueueSong(Song song)
+    {
+        State.AddQueue(song);
+        FilteredSongs.Remove(song);
+    }
+
+    private void Play()
+    {
+        if (!State.isPlaying)
+        {   
+            State.EmitEvent(new Data.Kantahe2EventArgs
+            {
+                Status = "Next"
+            });
+        }
+    }
+
+    private void Next()
+    {
+        State.EmitEvent(new Data.Kantahe2EventArgs
+        {
+            Status = "Next"
+        });
+    }
+
+    private void Stop()
+    {
+        if (State.isPlaying)
+        {
+            State.EmitEvent(new Data.Kantahe2EventArgs
+            {
+                Status = "Stop"
+            });
+        }
+    }
+
+    private void ToggleInfo()
+    {
+        State.EmitEvent(new Data.Kantahe2EventArgs
+        {
+            Status = "ToggleInfo"
+        });
+    }
+}
