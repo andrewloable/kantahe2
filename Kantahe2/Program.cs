@@ -15,8 +15,10 @@ namespace Kantahe2
         private static string _host = "http://0.0.0.0:80";
         [STAThread]
         public static void Main(string[] args)
-        {   
-            UI.New("http://localhost/qrcode", 500, 500, true);
+        {
+            //var ip = Kantahe2.Data.Kantahe2State.GetLocalIPAddress();
+            //var host = $"http://{ip}/qrcode";
+            //UI.New(host, 500, 500, true);
             CreateHostBuilder(args).Build().Run();
         }
 

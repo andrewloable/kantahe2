@@ -29,7 +29,7 @@
     private void Init()
     {
         JSRuntime.InvokeVoidAsync("video.playerTheme");
-        var ip = State.GetLocalIPAddress();
+        var ip = Kantahe2State.GetLocalIPAddress();
         host = $"http://{ip}/start";
         var b64 = State.GenerateQRCode(host);
         qrbase64 = $"data:image/jpeg; base64,{b64}";

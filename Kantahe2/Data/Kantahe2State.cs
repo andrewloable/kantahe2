@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json.Linq;
 using QRCoder;
 using System;
@@ -15,8 +16,8 @@ namespace Kantahe2.Data
     public class Kantahe2State
     {
         private static List<Song> SongList = new List<Song>();
-        private string filelistPath = "songlistpath.config";
-        private string songFolder = string.Empty;
+        public static string songListPath = "/home/kantahe/kantahe2/videoke/data.json";
+        public static string songFolder = string.Empty;
         public delegate void Kantahe2EventHandler(object sender, Kantahe2EventArgs e);
         public event Kantahe2EventHandler OnUpdateStatus;
         private static Queue<Song> Queue = new Queue<Song>();
@@ -26,10 +27,9 @@ namespace Kantahe2.Data
         public Kantahe2State()
         {
             try
-            {
-                var songlistpath = File.ReadAllText(filelistPath);
-                songFolder = Path.GetDirectoryName(songlistpath);
-                var songlistfile = File.ReadAllText(songlistpath);
+            {   
+                songFolder = Path.GetDirectoryName(songListPath);
+                var songlistfile = File.ReadAllText(songListPath);
                 var songs = JArray.Parse(songlistfile);
                 SongList.Clear();
                 foreach (var song in songs)
@@ -41,8 +41,9 @@ namespace Kantahe2.Data
                     }
                 }
             }
-            catch
+            catch(Exception ex)
             {
+                Console.WriteLine($"{ex.Message} {ex.StackTrace}");
             }
         }
         public void AddQueue(Song song)
@@ -82,6 +83,35 @@ namespace Kantahe2.Data
             return File.ReadAllBytes(Path.Combine(songFolder, song.FileName));
         }
 
+        public async Task SongStream(Song song, Stream outputstream)
+        {
+            var path = Path.Combine(songFolder, song.FileName);
+            
+            try
+            {
+                var buffer = new byte[65536];
+                using (var video = File.Open(path, FileMode.Open, FileAccess.Read))
+                {
+                    var length = (int)video.Length;
+                    var bytesRead = 1;
+                    while(length > 0 && bytesRead > 0)
+                    {
+                        bytesRead = video.Read(buffer, 0, Math.Min(length, buffer.Length));
+                        await outputstream.WriteAsync(buffer, 0, bytesRead);
+                        length -= bytesRead;
+                    }
+                }
+            }
+            catch
+            {
+                return;
+            }
+            finally
+            {
+                outputstream.Close();
+            }
+        }
+
         public void UserIsConnected()
         {
             EmitEvent(new Kantahe2EventArgs
@@ -98,12 +128,14 @@ namespace Kantahe2.Data
             OnUpdateStatus(this, args);
         }
 
-        public string GetLocalIPAddress()
+        public static string GetLocalIPAddress()
         {
             var host = Dns.GetHostEntry(Dns.GetHostName());
             foreach(var ip in host.AddressList)
             {
-                if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork 
+                    && !ip.ToString().Contains("127") 
+                    && !ip.ToString().Contains("local"))
                 {
                     return ip.ToString();
                 }

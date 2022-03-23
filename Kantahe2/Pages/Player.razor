@@ -27,6 +27,7 @@
     public string host;
     public bool showinfo = false;
     public Song currentSong;
+    public string ip;
 
     protected override void OnAfterRender(bool firstRender)
     {
@@ -34,7 +35,7 @@
         {
             JSRuntime.InvokeVoidAsync("video.playerTheme");
 
-            var ip = State.GetLocalIPAddress();
+            ip = Kantahe2State.GetLocalIPAddress();
             host = $"http://{ip}/start";
             var b64 = State.GenerateQRCode(host);
             qrbase64 = $"data:image/jpeg; base64,{b64}";
@@ -51,8 +52,8 @@
     private void GoNextSong()
     {
         currentSong = State.GetNextSong();
-        var data = State.SongBytes(currentSong);
-        JSRuntime.InvokeVoidAsync("video.play", "videoPlayer", data);
+        var url = $"http://{ip}/videos/{currentSong.FileName}";
+        JSRuntime.InvokeVoidAsync("video.play", "videoPlayer", url);
         State.isPlaying = true;
     }
 

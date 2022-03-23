@@ -4,9 +4,11 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -43,7 +45,15 @@ namespace Kantahe2
             }
 
             app.UseStaticFiles();
-
+            var path = Path.GetDirectoryName(Kantahe2.Data.Kantahe2State.songListPath);
+            Console.WriteLine(path);
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(
+                    path
+                    ),
+                RequestPath = "/videos"
+            });
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>

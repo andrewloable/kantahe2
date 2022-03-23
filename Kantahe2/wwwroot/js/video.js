@@ -5,10 +5,8 @@
     adminTheme: function () {
         document.body.classList.add('admin-body');
     },
-    play: function (id, data) {
+    play: function (id, url) {
         console.log("PLAYING");
-        var blob = new Blob([new Uint8Array(data).buffer])
-        var url = URL.createObjectURL(blob);
         var videoPlayer = document.getElementById(id);
         var source = document.createElement('source');
         source.setAttribute('src', url);
